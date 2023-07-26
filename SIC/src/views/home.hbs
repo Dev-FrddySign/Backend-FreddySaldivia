@@ -5,12 +5,49 @@
     <title>Lista de Productos</title>
   </head>
   <body>
-    <ul>
-      {{#each products}}
-        <li>{{this.name}}</li>
-      {{/each}}
+
+    <main>
+      <div>
+        <button>Agregar √</button>
+      </div>
+      <div>
+        <button>Eliminar X</button>
+      </div>
+      <div>
+        <button>Modificar 🔍</button>
+      </div>
+      <div>
+        <button>Actualizar ↺</button>
+      </div>
+    </main>
+
+  <h1>Lista de Productos</h1>
+    <ul id="product-list">
+        {{#each products}}
+            <li>{{this}}</li>
+        {{/each}}
     </ul>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/home.js"></script>
+
+
+    <script>
+        // Conectar con el servidor usando websockets
+        const socket = io();
+
+        // Escuchar eventos del servidor para recibir actualizaciones de la lista de productos
+        socket.on('updateProducts', (updatedProducts) => {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = ''; 
+
+            // Agregar cada producto actualizado a la lista
+            updatedProducts.forEach((product) => {
+                const li = document.createElement('li');
+                li.innerText = product;
+                productList.appendChild(li);
+            });
+        });
+    </script>
   </body>
 </html>

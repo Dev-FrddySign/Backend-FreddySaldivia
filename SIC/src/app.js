@@ -31,13 +31,48 @@ app.set("views", path.join(__dirname, "/views"));
 
 const socketServer = new Server(httpServer);
 
+let productos = [
+  "Americano",
+  "Arabe",
+  "Capuchino",
+  "Chocolate",
+  "Cremoso",
+  "Cubano",
+  "Hawaiano",
+  "Helado",
+  "Irlandes",
+  "Latte",
+  "Leche",
+  "Macchiato",
+  "Mocaccino",
+  "Tradicional",
+];
+
+app.get('/realtimeproducts', (req, res) => {
+  res.render('realTimeProducts', { productos });
+});
+
 socketServer.on("connection", (socketConnected) => {
   console.log(`Cliente conectado ${socketConnected.id}`);
 
-  socketConnected.emit("productos", products);
+  socketConnected.emit('updateProducts', productos);
 
   socketConnected.on("InventarioEvent", (data) => {
     console.log(`verificacion de inventario: ${data}`);
+  });
+
+  socketConnected.on('createProduct', (newProduct) => {
+    productos.push(newProduct);
+    socketServer.emit('updateProducts', productos);
+  });
+
+  socketConnected.on('deleteProduct', (productToDelete) => {
+    productos = products.filter(product => product !== productToDelete);
+    socketServer.emit('updateProducts', productos);
+  });
+
+  socketConnected.on("disconnect", () => {
+    console.log(`Cliente desconectado ${socketConnected.id}`);
   });
 });
 
@@ -220,281 +255,9 @@ app.delete("/productos/:Id", (req, res) => {
 
     socketServer.emit("productos", products);
 
-    res.json({ estatus: "success", message: "usuario eliminado" });
+    res.json({ estatus: "success", message: "producto eliminado" });
   } else {
     res.status(404).json({ status: "error", message: "el producto no existe" });
   }
 });
 
-
-viewsRouter.get("/", (req, res) => {
-  const products = [
-    {
-      id: 1,
-      name: "Expreso americano",
-      categoria: "Tradicional",
-      descripcion: "Café tradicional hecho con agua caliente y granos molidos",
-      precio: 4500,
-      stock: 10,
-      img: "americano.jpg",
-    },
-    {
-      id: 2,
-      name: "Expreso Tradicional",
-      categoria: "Tradicional",
-      descripcion: "Espreso diluido, menos intenso que el tradicional",
-      precio: 4500,
-      stock: 10,
-      img: "tradicional.jpg",
-    },
-    {
-      id: 3,
-      name: "Expreso Cremoso",
-      categoria: "Tradicional",
-      descripcion: "Espreso diluido, menos intenso que el tradicional",
-      precio: 4500,
-      stock: 10,
-      img: "cremoso.jpg",
-    },
-    {
-      id: 4,
-      name: "Expreso Helado",
-      categoria: "Tradicional, helado",
-      descripcion: "Bebida preparada con café espresso y cubitos de hielo",
-      precio: 4900,
-      stock: 10,
-      img: "helado.jpg",
-    },
-    {
-      id: 5,
-      name: "Cafe con leche",
-      categoria: "Tradicional, con leche",
-      descripcion: "Espreso mitad y mitad tradicional con leche al vapor",
-      precio: 4900,
-      stock: 10,
-      img: "leche.jpg",
-    },
-    {
-      id: 6,
-      name: "Latte",
-      categoria: "Tradicional, con leche",
-      descripcion: "Un shot de espresso con el doble de leche y espuma cremosa",
-      precio: 4900,
-      stock: 10,
-      img: "latte.jpg",
-    },
-    {
-      id: 7,
-      name: "Capuccino",
-      categoria: "Tradicional, con leche",
-      descripcion:
-        "Bebida de canela elaborada a partir de dosis iguales de café, leche y espuma",
-      precio: 5200,
-      stock: 10,
-      img: "capuccino.jpg",
-    },
-    {
-      id: 8,
-      name: "Macchiato",
-      categoria: "Tradicional, con leche",
-      descripcion:
-        "Café espresso mezclado con un poco de leche caliente y espuma",
-      precio: 5400,
-      stock: 10,
-      img: "macchiato.jpg",
-    },
-    {
-      id: 9,
-      name: "Mocaccino",
-      categoria: "Tradicional, con leche",
-      descripcion: "Café espreso con chocolate, un poco de leche y espuma",
-      precio: 5400,
-      stock: 10,
-      img: "mocaccino.jpg",
-    },
-    {
-      id: 10,
-      name: "Chocolate caliente",
-      categoria: "Tradicional, con leche",
-      descripcion:
-        "Bebida elaborada con chocolate disuelto en leche caliente y café",
-      precio: 4400,
-      stock: 10,
-      img: "chocolate.jpg",
-    },
-    {
-      id: 11,
-      name: "Cubano",
-      categoria: "Especial, Alcohol, Helado",
-      descripcion: "Bebida espresso helada con ron, nata y menta",
-      precio: 4400,
-      stock: 10,
-      img: "cubano.jpg",
-    },
-    {
-      id: 12,
-      name: "Hawaiano",
-      categoria: "Especial",
-      descripcion: "Bebida dulce preparada con café y leche de coco",
-      precio: 5400,
-      stock: 10,
-      img: "hawaiano.jpg",
-    },
-    {
-      id: 13,
-      name: "Árabe",
-      categoria: "Especial",
-      descripcion: "Bebida preparada con granos de café árabe y especias",
-      precio: 4500,
-      stock: 10,
-      img: "arabe.jpg",
-    },
-    {
-      id: 14,
-      name: "Irlandes",
-      categoria: "Especial, Alcohol",
-      descripcion:
-        "Bebida a base de café, whisky irlandés, azúcar y nata montada",
-      precio: 5500,
-      stock: 10,
-      img: "irlandes.jpg",
-    },
-  ]; 
-  res.render("home", { products });
-});
-
-viewsRouter.get("/realtimeproducts", (req, res) => {
-  const products = [
-    {
-      id: 1,
-      name: "Expreso americano",
-      categoria: "Tradicional",
-      descripcion: "Café tradicional hecho con agua caliente y granos molidos",
-      precio: 4500,
-      stock: 10,
-      img: "americano.jpg",
-    },
-    {
-      id: 2,
-      name: "Expreso Tradicional",
-      categoria: "Tradicional",
-      descripcion: "Espreso diluido, menos intenso que el tradicional",
-      precio: 4500,
-      stock: 10,
-      img: "tradicional.jpg",
-    },
-    {
-      id: 3,
-      name: "Expreso Cremoso",
-      categoria: "Tradicional",
-      descripcion: "Espreso diluido, menos intenso que el tradicional",
-      precio: 4500,
-      stock: 10,
-      img: "cremoso.jpg",
-    },
-    {
-      id: 4,
-      name: "Expreso Helado",
-      categoria: "Tradicional, helado",
-      descripcion: "Bebida preparada con café espresso y cubitos de hielo",
-      precio: 4900,
-      stock: 10,
-      img: "helado.jpg",
-    },
-    {
-      id: 5,
-      name: "Cafe con leche",
-      categoria: "Tradicional, con leche",
-      descripcion: "Espreso mitad y mitad tradicional con leche al vapor",
-      precio: 4900,
-      stock: 10,
-      img: "leche.jpg",
-    },
-    {
-      id: 6,
-      name: "Latte",
-      categoria: "Tradicional, con leche",
-      descripcion: "Un shot de espresso con el doble de leche y espuma cremosa",
-      precio: 4900,
-      stock: 10,
-      img: "latte.jpg",
-    },
-    {
-      id: 7,
-      name: "Capuccino",
-      categoria: "Tradicional, con leche",
-      descripcion:
-        "Bebida de canela elaborada a partir de dosis iguales de café, leche y espuma",
-      precio: 5200,
-      stock: 10,
-      img: "capuccino.jpg",
-    },
-    {
-      id: 8,
-      name: "Macchiato",
-      categoria: "Tradicional, con leche",
-      descripcion:
-        "Café espresso mezclado con un poco de leche caliente y espuma",
-      precio: 5400,
-      stock: 10,
-      img: "macchiato.jpg",
-    },
-    {
-      id: 9,
-      name: "Mocaccino",
-      categoria: "Tradicional, con leche",
-      descripcion: "Café espreso con chocolate, un poco de leche y espuma",
-      precio: 5400,
-      stock: 10,
-      img: "mocaccino.jpg",
-    },
-    {
-      id: 10,
-      name: "Chocolate caliente",
-      categoria: "Tradicional, con leche",
-      descripcion:
-        "Bebida elaborada con chocolate disuelto en leche caliente y café",
-      precio: 4400,
-      stock: 10,
-      img: "chocolate.jpg",
-    },
-    {
-      id: 11,
-      name: "Cubano",
-      categoria: "Especial, Alcohol, Helado",
-      descripcion: "Bebida espresso helada con ron, nata y menta",
-      precio: 4400,
-      stock: 10,
-      img: "cubano.jpg",
-    },
-    {
-      id: 12,
-      name: "Hawaiano",
-      categoria: "Especial",
-      descripcion: "Bebida dulce preparada con café y leche de coco",
-      precio: 5400,
-      stock: 10,
-      img: "hawaiano.jpg",
-    },
-    {
-      id: 13,
-      name: "Árabe",
-      categoria: "Especial",
-      descripcion: "Bebida preparada con granos de café árabe y especias",
-      precio: 4500,
-      stock: 10,
-      img: "arabe.jpg",
-    },
-    {
-      id: 14,
-      name: "Irlandes",
-      categoria: "Especial, Alcohol",
-      descripcion:
-        "Bebida a base de café, whisky irlandés, azúcar y nata montada",
-      precio: 5500,
-      stock: 10,
-      img: "irlandes.jpg",
-    },
-  ]; 
-  res.render("realTimeProducts", { products });
-});
