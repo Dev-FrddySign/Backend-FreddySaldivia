@@ -5,49 +5,94 @@
     <title>Lista de Productos</title>
   </head>
   <body>
-
-    <main>
-      <div>
-        <button>Agregar √</button>
+      <section class="text-gray-600 body-font">
+  <div class="container px-5 py-24 mx-auto" bis_skin_checked="1">
+    <div class="flex flex-wrap -m-4" bis_skin_checked="1">
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/420x260">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">The Catalyzer</h2>
+          <p class="mt-1">$16.00</p>
+        </div>
       </div>
-      <div>
-        <button>Eliminar X</button>
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/421x261">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">Shooting Stars</h2>
+          <p class="mt-1">$21.15</p>
+        </div>
       </div>
-      <div>
-        <button>Modificar 🔍</button>
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/422x262">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">Neptune</h2>
+          <p class="mt-1">$12.00</p>
+        </div>
       </div>
-      <div>
-        <button>Actualizar ↺</button>
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/423x263">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">The 400 Blows</h2>
+          <p class="mt-1">$18.40</p>
+        </div>
       </div>
-    </main>
-
-  <h1>Lista de Productos</h1>
-    <ul id="product-list">
-        {{#each products}}
-            <li>{{this}}</li>
-        {{/each}}
-    </ul>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/home.js"></script>
-
-
-    <script>
-        // Conectar con el servidor usando websockets
-        const socket = io();
-
-        // Escuchar eventos del servidor para recibir actualizaciones de la lista de productos
-        socket.on('updateProducts', (updatedProducts) => {
-            const productList = document.getElementById('product-list');
-            productList.innerHTML = ''; 
-
-            // Agregar cada producto actualizado a la lista
-            updatedProducts.forEach((product) => {
-                const li = document.createElement('li');
-                li.innerText = product;
-                productList.appendChild(li);
-            });
-        });
-    </script>
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/424x264">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">The Catalyzer</h2>
+          <p class="mt-1">$16.00</p>
+        </div>
+      </div>
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/425x265">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">Shooting Stars</h2>
+          <p class="mt-1">$21.15</p>
+        </div>
+      </div>
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/427x267">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">Neptune</h2>
+          <p class="mt-1">$12.00</p>
+        </div>
+      </div>
+      <div class="lg:w-1/4 md:w-1/2 p-4 w-full" bis_skin_checked="1">
+        <a class="block relative h-48 rounded overflow-hidden">
+          <img alt="ecommerce" class="object-cover object-center w-full h-full block" src="https://dummyimage.com/428x268">
+        </a>
+        <div class="mt-4" bis_skin_checked="1">
+          <h3 class="text-gray-500 text-xs tracking-widest title-font mb-1">CATEGORY</h3>
+          <h2 class="text-gray-900 title-font text-lg font-medium">The 400 Blows</h2>
+          <p class="mt-1">$18.40</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="socket.io/socket.io.js"></script>
+<script src="/js/home.js"></script>
   </body>
 </html>

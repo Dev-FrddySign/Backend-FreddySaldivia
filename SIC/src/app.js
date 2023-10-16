@@ -1,35 +1,87 @@
 import express from "express";
-import { engine } from "express-handlebars";
-import { __dirname } from "./utils.js";
-import { ProductManager } from "./productManager.js";
-import path, { dirname } from "path";
+import {config} from "./config/config.js";
+import { connectDB } from "./config/dbConexion.js";
+import { engine } from 'express-handlebars';
+import path from "path";
+import {__dirname} from "./utils.js";
 import { Server } from "socket.io";
+import { chatModel } from "./dao/models/chat.model.js";
+import passport from "passport";
+import session from "express-session";
+import { initializePassport } from "./config/passport.config.js";
+import MongoStore from "connect-mongo";
+import {transporter, adminEmail} from "./config/email.js";
+import {twilioClient, twilioPhone} from "./config/twilio.js";
 
+
+import { productsRouter } from "./routes/products.routes.js";
+// import { cartsRouter } from "./routes/carts.routes.js";
 import { viewsRouter } from "./routes/views.routes.js";
-import { Socket } from "dgram";
+import { sessionsRouter } from "./routes/sessions.routes.js";
 
-const port = 8080;
+const port = config.server.port;
 const app = express();
 
+//middlewares
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended:true}));
+app.use(express.static(path.join(__dirname, "/public")));
 
-app.use(express.static(path.join(__dirname, "/views")));
-
+//servidor de express
 const httpServer = app.listen(port, () =>
   console.log(`El servidor esta escuchando en el puerto ${port}`)
 );
 
+//servidor de websocket
+const socketServer = new Server(httpServer);
+
+//socket server
+io.on("connection",(socket)=>{
+  console.log("nuevo cliente conectado");
+
+  socket.on("authenticated",async(msg)=>{
+      const messages = await chatModel.find();
+      socket.emit("messageHistory", messages);
+      socket.broadcast.emit("newUser", msg);
+  });
+
+  //recibir el mensaje del cliente
+  socket.on("message",async(data)=>{
+      console.log("data", data);
+      const messageCreated = await chatModel.create(data);
+      const messages = await chatModel.find();
+      //cada vez que recibamos este mensaje, enviamos todos los mensajes actualizados a todos los clientes conectados
+      io.emit("messageHistory", messages);
+  })
+});
+
+//Conexion DB
+connectDB();
+
 app.use(express.static(path.join(__dirname, "/public")));
 
-const producService = new ProductManager("./products.json");
+const producService = new productsFile("./products.json");
 
-//Configuracion de Handlebars
-app.engine(".hbs", engine({ extname: ".hbs" }));
-app.set("view engine", ".hbs");
-app.set("views", path.join(__dirname, "/views"));
+//configuracion de handlebars
+app.engine('.hbs', engine({extname: '.hbs'}));
+app.set('view engine', '.hbs');
+app.set('views', path.join(__dirname,"/views"));
 
-const socketServer = new Server(httpServer);
+//configuracion de session
+app.use(session({
+  store:MongoStore.create({
+      mongoUrl:config.mongo.url
+  }),
+  secret:config.server.secretSession,
+  resave:true,
+  saveUninitialized:true
+}));
+
+//configuracion de passport
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 let productos = [
   "Americano",
@@ -76,7 +128,11 @@ socketServer.on("connection", (socketConnected) => {
   });
 });
 
+//Routes
 app.use(viewsRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
+
 
 const products = [
   {
@@ -261,3 +317,89 @@ app.delete("/productos/:Id", (req, res) => {
   }
 });
 
+app.listen(port,()=>console.log(`Servidor ejecutando en el puerto ${port}`));
+
+
+//Crear el contenido del correo o cuerpo del mensaje
+const emailTemplate = `
+    <div>
+        <h1>Bienvenido!!</h1>
+        <img src="https://fs-prod-cdn.nintendo-europe.com/media/images/10_share_images/portals_3/2x1_SuperMarioHub.jpg" style="width:250px"/>
+        <p>Ya puedes empezar a usar nuestros servicios</p>
+        <a href="https://www.google.com/">Explorar</a>
+    </div>
+`;
+
+//Agregar la estructura del correo
+
+const userEmail = "CORREO CLIENTE";
+//Endpoint para enviar el correo
+app.post("/send-emailCoder", async(req,res)=>{
+    try {
+        const info = await transporter.sendMail({
+            from:"Eccomerce pepito",
+            to:userEmail, //correo del destinatario puede ser cualquiera.
+            subject:"Correo para restablecer contraseña",
+            html:emailTemplate
+        });
+        console.log(info);
+        res.json({status:"success", message:`Correo enviado a ${userEmail} exitosamente`});
+    } catch (error) {
+        console.log(error.message);
+        res.json({status:"error", message:"El correo no se pudo enviar"});
+    }
+});
+
+
+//correo con imagenes
+const emailTemplateImages = `
+    <div>
+        <h1>Bienvenido!!</h1>
+        <img src="https://fs-prod-cdn.nintendo-europe.com/media/images/10_share_images/portals_3/2x1_SuperMarioHub.jpg" style="width:250px"/>
+        <p>Ya puedes empezar a usar nuestros servicios</p>
+        <a href="https://www.google.com/">Explorar</a>
+        <p>imagen cargada desde archivo</p>
+        <img src="cid:gatoCoder"/>
+    </div>
+`;
+
+app.post("/send-emailImages", async(req,res)=>{
+    try {
+        const info = await transporter.sendMail({
+            from:"Eccomerce pepito",
+            to:userEmail, //correo del destinatario puede ser cualquiera.
+            subject:"Correo para restablecer contraseña",
+            html:emailTemplate,
+            attachments:[
+                {
+                    filename:"gato.jpg",
+                    path:path.join(__dirname,"/images/gato.jpg"),
+                    cid:"gatoCoder"
+                }
+            ]
+        });
+        console.log(info);
+        res.json({status:"success", message:`Correo enviado a ${userEmail} exitosamente`});
+    } catch (error) {
+        console.log(error.message);
+        res.json({status:"error", message:"El correo no se pudo enviar"});
+    }
+});
+
+const clientPhone = "+PHONE CLIENTE";
+//Ruta para envio de sms
+app.post("/sms-twilio", async(req,res)=>{
+    try {
+        //logica de finalizacion de la compra, y registo en db.
+        const info = await twilioClient.messages.create({
+            body:"Tu registro fue exitoso",
+            from:twilioPhone,
+            to:clientPhone
+        });
+        console.log(info);
+        res.json({status:"success", message:"Registro exitoso y sms enviado"});
+    } catch (error) {
+        console.log(error.message);
+        res.json({status:"error", message:"El sms no se pudo enviar"});
+    }
+});
